@@ -5,20 +5,27 @@ import (
 	"io"
 	"os"
 	"strings"
+	"net"
 )
 
 
 
 func main() {
-	filename := "messages.txt"
-	f, err := os.Open(filename)
+	listener, err := net.Listen("tcp", ":42069")
 	if err != nil {
 		os.Exit(1)
 	}
-	defer f.Close()
-	ch := getLinesChannel(f)
-	for s := range ch {
-		fmt.Fprintln(os.Stdout, "read:", s)
+	defer listener.Close()
+	for {
+		f, err := listener.Accept()
+		if err != nil {
+			os.Exit(1)
+		}
+		ch := getLinesChannel(f)
+		for s := range ch {
+			fmt.Fprintln(os.Stdout, s)
+		}
+		f.Close()
 	}
 }
 
